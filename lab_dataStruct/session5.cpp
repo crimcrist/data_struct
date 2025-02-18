@@ -8,7 +8,7 @@ struct Student {
     struct Student *left, *right;
 };
 
-struct Student *createStudent(int id, char *name){
+struct Student *createStudent(int id, const char *name){
     struct Student *newStudent = (struct Student*)malloc(sizeof(struct Student));
     newStudent->id = id;
     strcpy (newStudent->nama, name);
@@ -75,11 +75,12 @@ struct Student *search (struct Student *root, int id){
         return search(root->right, id);
     }
 
-    // Case 3 : Kalau id yang mau di search itu lebih kecil dari current id
+    // Case 4 : Kalau id yang mau di search itu lebih kecil dari current id
     else if (id < root->id){
         return search(root->left, id);
     }
 }
+
 struct Student *update (struct Student *root,int id, char *newName){
     // Case 1 : Kalo search ga ketemu
     if (root == NULL){
@@ -87,7 +88,7 @@ struct Student *update (struct Student *root,int id, char *newName){
         return NULL;
     }
 
-    // Case 2 : Kalau search ketemu tinggalganti namanya
+    // Case 2 : Kalau search ketemu tinggal ganti namanya
     else if (root->id == id){
         puts ("Found");
         strcpy (root->nama, newName);
@@ -96,13 +97,75 @@ struct Student *update (struct Student *root,int id, char *newName){
 
     // Case 3 : Kalau id yang mau di update itu lebih gede dari current id
     else if (id > root->id){
-        return update(root->right, id);
+        return update(root->right, id, newName);
     }
 
-    // Case 3 : Kalau id yang mau di update itu lebih kecil dari current id
+    // Case 4 : Kalau id yang mau di update itu lebih kecil dari current id
     else if (id < root->id){
-        return update(root->left, id);
+        return update(root->left, id, newName);
     }
+}
+
+struct Student *findSuccessor(Student *root){
+    while (root->left){
+        root = root->left;
+    }
+    return root;
+}
+
+struct Student *del (struct Student *root, int id){
+    // Case 1 : Kalo search ga ketemu
+    if (root == NULL){
+        puts ("Not found");
+        return NULL;
+    }
+
+    // Case 2 : Kalau id yang mau di hapus itu lebih gede dari current id
+    else if (id > root->id){
+        root->right = del(root->right, id);
+    }
+
+    // Case 3 : Kalau id yang mau di hapus itu lebih kecil dari current id
+    else if (id < root->id){
+        root->left = del(root->left, id);
+    }
+
+    else {
+        // semisal sisi kanan dan sisi kiri kosong
+        if (root->left == NULL && root->right == NULL){
+            free(root);
+            return NULL;
+        }
+        // ini ke kanan nah setelahnya ternyata kirinya kosong
+        else if (root->right && root->left == NULL) {
+            Student *temp = root->right;
+            free(root);
+            return temp;
+        }
+        // ini ke kiri nah setelahnya ternyata kanannya kosong
+        else if (root->left && root->right == NULL) {
+            Student *temp = root->left;
+            free(root);
+            return temp;
+        }
+        // Benerin succesor nya jadi geser ke kiri
+        else {
+            Student *succesor = findSuccessor (root->right);
+            root->id = succesor->id;
+            strcpy (root->nama, succesor->nama);
+            root->right = del(root->right, succesor->id);
+            return root;
+        }
+    }
+    return root;
+}
+
+Student *delAll (Student *root){
+    // hapus satu satu hingga NULL
+    while (root){
+        root = del(root, root->id);
+    }
+    return root;
 }
 
 int main(){
@@ -120,17 +183,30 @@ int main(){
     inorder(root);
     printf ("%d -> %s\n", root->id, root->nama);
 
-    struct Student *searchStudent = update(root, 378);
+    struct Student *searchStudent = search(root, 378);
     if (searchStudent!= NULL){
         printf ("Found Student with id %d and name %s\n", searchStudent->id, searchStudent->nama);
     }
 
     //Updating
     puts ("Updating");
-    struct Student *updateStudent = search(root, 1, "tommy");
+    struct Student *updateStudent = update(root, 1, "tommy");
     if (updateStudent != NULL){
         printf ("Update Student with id %d, New NAme is %s\n", updateStudent->id, updateStudent->nama);
     }
+
+    // Delete
+    puts ("Delete");
+    root = del(root, 5);
+    inorder(root);
+
+    // Delete ALL
+    puts ("Delete All");
+    root = delAll(root);
+    inorder(root);
+
+    
+    
 
 
 
