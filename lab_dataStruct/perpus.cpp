@@ -1,87 +1,116 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-#define HASH_SIZE 50
+#define TABLE_SIZE 50
 
-struct Perpus {
-    char Name[100];
-    char nomorAnggota[30];
-    int usia;
-    char categoryBook[100];
-    int durasi;
-    char id [10];
-    struct Perpus *next;
-} *HashTable[HASH_SIZE];
+// Struktur untuk data peminjaman
+typedef struct Loan {
+    char id[6];
+    char name[41];
+    char category[15];
+    int duration;
+    struct Loan* next;
+} Loan;
 
-void printMenu(){
-    puts ("+--------------------------------+");
-    puts ("|    Perpustakaan Nusantara      |");
-    puts ("+--------------------------------+");
-    puts ("1. Peminjaman Buku");
-    puts ("2. Lihat Peminjaman");
-    puts ("3. Hapus Peminjaman");
-    puts ("4. Keluar");
+// Hash table
+Loan* hashTable[TABLE_SIZE];
+
+// Fungsi untuk menghitung hash key
+int getHashKey(char* id) {
+    int lastDigits = (id[2] - '0') * 10 + (id[3] - '0');
+    return (lastDigits - 2) % TABLE_SIZE;
 }
 
-char* generatedID (char* categoty){
-    char*id = 
+// Fungsi untuk membuat ID peminjaman
+void generateLoanID(char* id, char* category) {
+    snprintf(id, 6, "%c%c%03d", category[0], category[1], rand() % 9 + 1);
 }
 
-void peminjaman (){
-    struct Perpus *newCustom = (Perpus*)malloc(sizeof(Perpus));
-    do {
-        printf ("Masukkan Nama Lengkap : ");
-        scanf ("%[^\n]" , newCustom->Name);
-    } while (strlen(newCustom->Name) < 5 || strlen(newCustom->Name) > 40);
+// Fungsi untuk menambahkan peminjaman
+void addLoan() {
+    Loan* newLoan = (Loan*)malloc(sizeof(Loan));
+    if (!newLoan) return;
 
-    do {
-        printf ("Masukkan Nomor Anggota : ");
-        scanf ("%s" , newCustom->nomorAnggota);
-    } while (strlen(newCustom->nomorAnggota) != 6);
-    
-    do {
-        printf ("Masukkan Usia Pengguna : ");
-        scanf ("%d" , &newCustom->usia);
-    } while (newCustom->usia < 10|| newCustom->usia > 80);
+    printf("Nama Peminjam: ");
+    fgets(newLoan->name, 41, stdin);
+    newLoan->name[strcspn(newLoan->name, "\n")] = 0;
 
-    do {
-        printf ("Masukkan Category Book : ");
-        scanf ("%s" , newCustom->categoryBook);
-    } while (strcmp(newCustom->categoryBook, "Fiksi") != 0 && strcmp(newCustom->categoryBook, "Non-Fiksi") != 0 && strcmp(newCustom->categoryBook, "Referensi") != 0);
-    
+    printf("Kategori Buku (Fiksi/Non-Fiksi/Referensi): ");
+    fgets(newLoan->category, 15, stdin);
+    newLoan->category[strcspn(newLoan->category, "\n")] = 0;
 
-}
-void lihatPeminjaman(){
+    printf("Durasi Peminjaman (1-30 hari): ");
+    scanf("%d", &newLoan->duration);
+    getchar();
 
+    generateLoanID(newLoan->id, newLoan->category);
+    int key = getHashKey(newLoan->id);
+
+    newLoan->next = hashTable[key];
+    hashTable[key] = newLoan;
+
+    printf("Peminjaman Berhasil! ID: %s\n", newLoan->id);
 }
 
-void hapusPeminjaman(){
-
-}
-
-int main (){
-    int key = -1;
-    while (1){
-        printMenu();
-        do {
-            printf (">> ");
-            scanf ("%d", &key);
-        } while (key < 1 || key > 4);
-
-        switch (key){
-        case 1:
-            peminjaman();
-            break;
-        case 2:
-            lihatPeminjaman();
-            break;
-        case 3:
-            hapusPeminjaman();
-            break;
-        case 4:
-            return;
-            break;
+// Fungsi untuk melihat semua peminjaman
+void viewLoans() {
+    int found = 0;
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        Loan* temp = hashTable[i];
+        while (temp) {
+            printf("ID: %s | Nama: %s | Kategori: %s | Durasi: %d hari\n", temp->id, temp->name, temp->category, temp->duration);
+            temp = temp->next;
+            found = 1;
         }
     }
+    if (!found) printf("Tidak ada peminjaman.\n");
+}
+
+// Fungsi untuk menghapus peminjaman
+void deleteLoan() {
+    char id[6];
+    printf("Masukkan ID Peminjaman: ");
+    fgets(id, 6, stdin);
+    getchar();
+
+    int key = getHashKey(id);
+    Loan* temp = hashTable[key];
+    Loan* prev = NULL;
+
+    while (temp) {
+        if (strcmp(temp->id, id) == 0) {
+            if (prev) prev->next = temp->next;
+            else hashTable[key] = temp->next;
+            free(temp);
+            printf("Peminjaman berhasil dihapus!\n");
+            return;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("ID tidak ditemukan.\n");
+}
+
+// Menu utama
+int main() {
+    srand(time(NULL));
+    int choice;
+
+    do {
+        printf("\n1. Tambah Peminjaman\n2. Lihat Peminjaman\n3. Hapus Peminjaman\n4. Keluar\nPilihan: ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1: addLoan(); break;
+            case 2: viewLoans(); break;
+            case 3: deleteLoan(); break;
+            case 4: printf("Keluar dari program.\n"); break;
+            default: printf("Pilihan tidak valid!\n");
+        }
+    } while (choice != 4);
+
+    return 0;
 }

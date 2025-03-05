@@ -22,7 +22,7 @@ int HashKey(char* id) {
     }
     sum *= sum;
     char string[100];
-    snprintf(string, sizeof(string), "%d", sum);
+    sprintf(string, "%d", sum);
     int x = strlen(string);
     int hashKey = 0;
     if (sum % 2 == 1) {
