@@ -15,7 +15,7 @@ struct Booking{
     Booking *next;
 } *bookings[HASH_SIZE];
 
-Bookings* createBooking (char* nama, char* phoneNum, int age, char*roomType, int stayDuration){
+Booking* createBooking (char* nama, char* phoneNum, int age, char*roomType, int stayDuration){
     Booking *newBooking = (Booking*)malloc(sizeof(Booking));
     strcpy (newBooking->nama, nama);
     strcpy (newBooking->phoneNumber, phoneNum);

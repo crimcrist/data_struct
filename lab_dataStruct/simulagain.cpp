@@ -35,7 +35,7 @@ void insert(const char *key, int value) {
     while (hashTable[index] != NULL && hashTable[index]->key[0] != '\0') {
         step++;
         index = quadraticProbing(index, step);
-        if (step >= TABLE_SIZE) {
+        if (step > TABLE_SIZE) {
             printf("Hash Table is full\n");
             return;
         }
