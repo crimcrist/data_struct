@@ -101,6 +101,38 @@ node* insert (node *root, int val){
     return root;
 }
 
+node* delet(node*root, int val){
+    if (root == NULL){
+        return root;
+    }
+
+    if (val < root->val){
+        root->left = delet(root->left, val);
+    } else if (val > root->val){
+        root->right = delet(root->right, val);
+    } else {
+        if (root->left == NULL || root->right == NULL){
+            node *temp = root->left ? root->left : root->right; //
+
+            if (temp == NULL){
+                temp = root;
+                root = NULL;
+            } else {
+                *root = *temp;
+            }
+            free(temp);
+        } else {
+            node *temp = root->right;
+            while (temp->left != NULL){
+                temp = temp->left;
+            }
+            root->val = temp->val;
+            root->right = delet(root->right, temp->val);
+        }
+    }
+
+}
+
 void inOrder(node *root){
     if (root){
         inOrder(root->left);
