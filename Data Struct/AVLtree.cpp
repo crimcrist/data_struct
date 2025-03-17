@@ -131,6 +131,28 @@ node* delet(node*root, int val){
         }
     }
 
+    
+    root->height = 1 + max(height(root->left), height(root->right));
+
+    if (getBalance(root) > 1 && getBalance(root->left) >= 0){
+        return rightRotate(root);
+    }
+
+    if (getBalance(root) < -1 && getBalance(root->right) <= 0){
+        return leftRotate(root);
+    }
+
+    if (getBalance(root) > 1 && getBalance(root->left) < 0){
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    if (getBalance(root) < -1 && getBalance(root->right) > 0){
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
 }
 
 void inOrder(node *root){
@@ -150,6 +172,10 @@ int main (){
     root = insert(root, 50);
     root = insert(root, 25);
 
+    inOrder(root);
+
+    puts("=====================================");
+    root = delet(root, 30);
     inOrder(root);
     return 0;
 }
