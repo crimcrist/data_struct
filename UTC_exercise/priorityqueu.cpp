@@ -19,7 +19,7 @@ int getPriority(const char* kondisi) {
 }
 
 void insertKorban() {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node)); getchar();
 
     printf("Enter your name: ");
     scanf("%[^\n]", newNode->nama); getchar();
@@ -39,7 +39,7 @@ void insertKorban() {
     } else {
         struct Node* temp = head;
 
-        while (temp->next != NULL && temp->priority <= newNode->priority) {
+        while (temp->next != NULL && temp->next->priority <= newNode->priority) {
             temp = temp->next;
         }
 
